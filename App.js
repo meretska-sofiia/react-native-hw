@@ -10,9 +10,9 @@ import {
   Alert,
   Button,
 } from "react-native";
-// import LoginScreen from "./Screens/LoginScreen";
-import RegistartionScreen from "./Screens/RegistrationScreen";
+import LoginScreen from "./Screens/LoginScreen";
+// import RegistartionScreen from "./Screens/RegistrationScreen";
 
 export default function App() {
-  return <RegistartionScreen />;
+  return <LoginScreen />;
 }

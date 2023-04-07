@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -10,9 +10,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
-import * as Font from "expo-font";
+import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+
+SplashScreen.preventAutoHideAsync();
 
 const initialState = {
   login: "",
@@ -24,16 +27,10 @@ export default function RegistartionScreen() {
   const [state, setState] = useState(initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
-  const [isLoadedFonts] = Font.useFonts({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
-    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
-  });
-  const onLayoutRootView = useCallback(async () => {
-    if (isLoadedFonts) {
-      await SplashScreen.hideAsync();
-    }
-  }, [isLoadedFonts]);
+
+  const [dimensions, setDimensions] = useState(
+    Dimensions.get("window").width - 16 * 2
+  );
 
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -44,22 +41,40 @@ export default function RegistartionScreen() {
     console.log(state);
     setState(initialState);
   };
+  useEffect(() => {
+    const onChange = () => {
+      const width = Dimensions.get("window").width - 16 * 2;
 
+      setDimensions(width);
+    };
+    Dimensions.addEventListener("change", onChange);
+    return () => {
+      Dimensions.removeEventListener("change", onChange);
+    };
+  }, []);
+  const [loaded] = useFonts({
+    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
+    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
+    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
+  });
+  const onLayoutRootView = useCallback(async () => {
+    if (loaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
   return (
-    <TouchableWithoutFeedback
-      onPress={keyboardHide}
-      onLayout={onLayoutRootView}
-    >
-      <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={keyboardHide}>
+      <View style={styles.container} onLayout={onLayoutRootView}>
         <ImageBackground
           style={styles.background}
           source={require("../assets/bg.jpg")}
         >
           <KeyboardAvoidingView
-            behavior={Platform.select({
-              ios: "padding",
-              android: "height",
-            })}
+            behavior={Platform.OS == "ios" ? "padding" : "height"}
           >
             <View
               style={{
@@ -69,11 +84,11 @@ export default function RegistartionScreen() {
             >
               <Text style={styles.formTitle}>Регистрация</Text>
 
-              <View style={styles.inputContainer}>
+              <View style={{ ...styles.inputContainer }}>
                 <TextInput
                   value={state.login}
                   placeholder="Логин"
-                  style={styles.input}
+                  style={{ ...styles.input, width: dimensions }}
                   onFocus={() => setIsShowKeyboard(true)}
                   onChangeText={(value) =>
                     setState((prevState) => ({ ...prevState, login: value }))
@@ -85,7 +100,10 @@ export default function RegistartionScreen() {
                     setState((prevState) => ({ ...prevState, email: value }))
                   }
                   placeholder="Адрес электронной почты"
-                  style={styles.input}
+                  style={{
+                    ...styles.input,
+                    width: dimensions,
+                  }}
                   onFocus={() => setIsShowKeyboard(true)}
                 />
                 <TextInput
@@ -94,9 +112,8 @@ export default function RegistartionScreen() {
                     setState((prevState) => ({ ...prevState, password: value }))
                   }
                   placeholder="Пароль"
-                  secureTextEntry={true}
-                  type={showPassword ? "text" : "password"}
-                  style={styles.passwordInput}
+                  secureTextEntry={showPassword ? false : true}
+                  style={{ ...styles.passwordInput, width: dimensions }}
                   onFocus={() => setIsShowKeyboard(true)}
                 />
                 <TouchableOpacity onPress={handlePasswordVisibility}>
@@ -111,9 +128,7 @@ export default function RegistartionScreen() {
                 <Text style={styles.primaryButtonText}>Зарегистрироваться</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-              //   onPress={onLoginPress}
-              >
+              <TouchableOpacity>
                 <Text style={styles.secondaryButtonText}>
                   Уже есть аккаунт? Войти
                 </Text>
@@ -142,9 +157,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     borderTopLeftRadius: 25,
     alignItems: "center",
-    // flex: 1,
-    width: "100%",
-    // justifyContent: "center",
     paddingTop: 92,
     paddingBottom: 78,
     paddingVertical: 16,
@@ -164,7 +176,6 @@ const styles = StyleSheet.create({
 
   input: {
     backgroundColor: "#F6F6F6",
-    width: 343,
     padding: 16,
     borderWidth: 1,
     borderColor: "#E8E8E8",
@@ -179,7 +190,7 @@ const styles = StyleSheet.create({
     position: "relative",
     marginBottom: 0,
     backgroundColor: "#F6F6F6",
-    width: 343,
+    width: "100%",
     padding: 16,
     borderWidth: 1,
     borderColor: "#E8E8E8",
