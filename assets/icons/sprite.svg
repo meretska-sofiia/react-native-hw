@@ -1,0 +1,18 @@
+<svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<symbol id="icon-grid" viewBox="0 0 32 32">
+<path fill="#fff" style="fill: var(--color1, #fff)" d="M0 0h32v32h-32v-32z"></path>
+<path fill="none" stroke="#212121" style="stroke: var(--color2, #212121)" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4" stroke-width="1.3333" d="M4 4h9.333v9.333h-9.333v-9.333z"></path>
+<path fill="none" stroke="#212121" style="stroke: var(--color2, #212121)" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4" stroke-width="1.3333" d="M18.667 4h9.333v9.333h-9.333v-9.333z"></path>
+<path fill="none" stroke="#212121" style="stroke: var(--color2, #212121)" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4" stroke-width="1.3333" d="M18.667 18.667h9.333v9.333h-9.333v-9.333z"></path>
+<path fill="none" stroke="#212121" style="stroke: var(--color2, #212121)" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4" stroke-width="1.3333" d="M4 18.667h9.333v9.333h-9.333v-9.333z"></path>
+</symbol>
+<symbol id="icon-user" viewBox="0 0 32 32">
+<path stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4" stroke-width="1.3333" d="M26.667 28v-2.667c0-2.945-2.388-5.333-5.333-5.333h-10.667c-2.946 0-5.333 2.388-5.333 5.333v2.667"></path>
+<path stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4" stroke-width="1.3333" d="M16 14.667c2.945 0 5.333-2.388 5.333-5.333s-2.388-5.333-5.333-5.333c-2.946 0-5.333 2.388-5.333 5.333s2.388 5.333 5.333 5.333z"></path>
+</symbol>
+<symbol id="icon-select_icon" viewBox="0 0 32 32">
+<path fill="#f3f3f3" style="fill: var(--color3, #f3f3f3)" d="M9.867 10.667l-1.867 1.867 8 8 8-8-1.867-1.867-6.133 6.133-6.133-6.133z"></path>
+</symbol>
+</defs>
+</svg>
