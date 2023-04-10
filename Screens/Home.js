@@ -1,9 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 const Tab = createBottomTabNavigator();
 import { TouchableOpacity, StyleSheet, View } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import PostsScreen from "./MainScreens/PostsScreen";
 import CreatePostsScreen from "./MainScreens/CreatePostsScreen";
@@ -32,6 +34,14 @@ const Home = () => {
             <View style={styles.plusIconContainer}>
               <AntDesign name="plus" size={24} color="#fff" />
             </View>
+          ),
+          headerLeft: () => (
+            <MaterialCommunityIcons
+              name="keyboard-backspace"
+              size={24}
+              color="#212121"
+              style={{ marginLeft: 10 }}
+            />
           ),
         }}
         name="Создать публикацию"

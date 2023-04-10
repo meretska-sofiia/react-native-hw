@@ -10,10 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import PrimaryButton from "../components/PrimaryButton";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,10 +27,6 @@ export default function LoginScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
 
-  const [dimensions, setDimensions] = useState(
-    Dimensions.get("window").width - 16 * 2
-  );
-
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -40,17 +36,7 @@ export default function LoginScreen({ navigation }) {
     console.log(state);
     setState(initialState);
   };
-  useEffect(() => {
-    const onChange = () => {
-      const width = Dimensions.get("window").width - 16 * 2;
 
-      setDimensions(width);
-    };
-    Dimensions.addEventListener("change", onChange);
-    return () => {
-      Dimensions.removeEventListener("change", onChange);
-    };
-  }, []);
   const [loaded] = useFonts({
     "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
     "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
@@ -90,10 +76,7 @@ export default function LoginScreen({ navigation }) {
                     setState((prevState) => ({ ...prevState, email: value }))
                   }
                   placeholder="Адрес электронной почты"
-                  style={{
-                    ...styles.input,
-                    width: dimensions,
-                  }}
+                  style={styles.input}
                   onFocus={() => setIsShowKeyboard(true)}
                 />
                 <TextInput
@@ -103,21 +86,14 @@ export default function LoginScreen({ navigation }) {
                   }
                   placeholder="Пароль"
                   secureTextEntry={showPassword ? false : true}
-                  style={{ ...styles.passwordInput, width: dimensions }}
+                  style={styles.passwordInput}
                   onFocus={() => setIsShowKeyboard(true)}
                 />
                 <TouchableOpacity onPress={handlePasswordVisibility}>
                   <Text style={styles.showPassword}>Показать</Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={keyboardHide}
-              >
-                <Text style={styles.primaryButtonText}>Войти</Text>
-              </TouchableOpacity>
-
+              <PrimaryButton text={"Войти"} onPress={keyboardHide} />
               <TouchableOpacity
                 onPress={() => navigation.navigate("Registration")}
               >
@@ -151,10 +127,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 92,
     paddingBottom: 78,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
   },
   inputContainer: {
     marginBottom: 43,
+    width: "100%",
   },
   formTitle: {
     fontWeight: 500,
@@ -169,6 +146,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#F6F6F6",
     padding: 16,
+    width: "100%",
     borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 8,
@@ -202,20 +180,7 @@ const styles = StyleSheet.create({
     color: "#1B4371",
     fontFamily: "Roboto-Regular",
   },
-  primaryButton: {
-    backgroundColor: "#FF6C00",
-    width: 343,
-    borderRadius: 100,
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    lineHeight: 19,
-    textAlign: "center",
-    fontFamily: "Roboto-Regular",
-  },
+
   secondaryButtonText: {
     color: "#1B4371",
     fontSize: 16,

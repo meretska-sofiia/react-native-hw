@@ -10,10 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import PrimaryButton from "../components/PrimaryButton";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,10 +28,6 @@ export default function RegistartionScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
 
-  const [dimensions, setDimensions] = useState(
-    Dimensions.get("window").width - 16 * 2
-  );
-
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -41,17 +37,7 @@ export default function RegistartionScreen({ navigation }) {
     console.log(state);
     setState(initialState);
   };
-  useEffect(() => {
-    const onChange = () => {
-      const width = Dimensions.get("window").width - 16 * 2;
 
-      setDimensions(width);
-    };
-    Dimensions.addEventListener("change", onChange);
-    return () => {
-      Dimensions.removeEventListener("change", onChange);
-    };
-  }, []);
   const [loaded] = useFonts({
     "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
     "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
@@ -88,7 +74,7 @@ export default function RegistartionScreen({ navigation }) {
                 <TextInput
                   value={state.login}
                   placeholder="Логин"
-                  style={{ ...styles.input, width: dimensions }}
+                  style={styles.input}
                   onFocus={() => setIsShowKeyboard(true)}
                   onChangeText={(value) =>
                     setState((prevState) => ({ ...prevState, login: value }))
@@ -100,10 +86,7 @@ export default function RegistartionScreen({ navigation }) {
                     setState((prevState) => ({ ...prevState, email: value }))
                   }
                   placeholder="Адрес электронной почты"
-                  style={{
-                    ...styles.input,
-                    width: dimensions,
-                  }}
+                  style={styles.input}
                   onFocus={() => setIsShowKeyboard(true)}
                 />
                 <TextInput
@@ -113,20 +96,17 @@ export default function RegistartionScreen({ navigation }) {
                   }
                   placeholder="Пароль"
                   secureTextEntry={showPassword ? false : true}
-                  style={{ ...styles.passwordInput, width: dimensions }}
+                  style={styles.passwordInput}
                   onFocus={() => setIsShowKeyboard(true)}
                 />
                 <TouchableOpacity onPress={handlePasswordVisibility}>
                   <Text style={styles.showPassword}>Показать</Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity
-                style={styles.primaryButton}
+              <PrimaryButton
+                text={"Зарегистрироваться"}
                 onPress={keyboardHide}
-              >
-                <Text style={styles.primaryButtonText}>Зарегистрироваться</Text>
-              </TouchableOpacity>
+              />
 
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.secondaryButtonText}>
@@ -159,10 +139,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 92,
     paddingBottom: 78,
-    paddingVertical: 16,
+
+    paddingHorizontal: 16,
   },
   inputContainer: {
     marginBottom: 43,
+    width: "100%",
   },
   formTitle: {
     fontWeight: 500,
