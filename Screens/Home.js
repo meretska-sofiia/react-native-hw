@@ -4,7 +4,7 @@ import { TouchableOpacity, StyleSheet, View } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
+
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import PostsScreen from "./MainScreens/PostsScreen";
@@ -16,21 +16,17 @@ const Home = ({ navigation }) => {
     <Tab.Navigator screenOptions={{ tabBarShowLabel: false }}>
       <Tab.Screen
         options={{
-          tabBarIcon: ({ focused, size, color }) => (
+          headerShown: false,
+          tabBarIcon: () => (
             <Ionicons name="grid-outline" size={24} color="black" />
           ),
-          headerRight: ({ focused, size, color }) => (
-            <TouchableOpacity onPress={() => {}} style={styles.logout}>
-              <MaterialIcons name="logout" size={24} color="#BDBDBD" />
-            </TouchableOpacity>
-          ),
         }}
-        name="Публикации"
+        name={"Posts"}
         component={PostsScreen}
       />
       <Tab.Screen
         options={{
-          tabBarIcon: ({ focused, size, color }) => (
+          tabBarIcon: () => (
             <View style={styles.plusIconContainer}>
               <AntDesign name="plus" size={24} color="#fff" />
             </View>
@@ -50,7 +46,7 @@ const Home = ({ navigation }) => {
       />
       <Tab.Screen
         options={{
-          tabBarIcon: ({ focused, size, color }) => (
+          tabBarIcon: () => (
             <Ionicons name="person-outline" size={24} color="black" />
           ),
         }}
@@ -61,9 +57,6 @@ const Home = ({ navigation }) => {
   );
 };
 const styles = StyleSheet.create({
-  logout: {
-    paddingRight: 10,
-  },
   plusIconContainer: {
     backgroundColor: "#FF6C00",
     borderRadius: 20,

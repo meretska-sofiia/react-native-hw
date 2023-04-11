@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
-// import * as Location from "expo-location";
+import * as Location from "expo-location";
 import PrimaryButton from "../../components/PrimaryButton";
 
 import { Fontisto } from "@expo/vector-icons";
@@ -22,6 +22,8 @@ import { Feather } from "@expo/vector-icons";
 const initialState = {
   imgDescr: "",
   photo: null,
+  locationDescription: "",
+  location: {},
 };
 const screenDimensions = Dimensions.get("screen");
 
@@ -32,13 +34,15 @@ const AddPostsScreen = ({ navigation }) => {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [dimensions, setDimensions] = useState(screenDimensions.width - 16 * 2);
-  const [location, setLocation] = useState(null);
 
   const onHandleSubmit = () => {
     navigation.navigate("Публикации", {
       photo: state.photo,
       imgDescr: state.imgDescr,
+      locationDescription: state.locationDescription,
+      location: state.location,
     });
+
     setState(initialState);
   };
 
@@ -52,8 +56,9 @@ const AddPostsScreen = ({ navigation }) => {
       await MediaLibrary.createAssetAsync(uri);
       setState((prev) => ({ ...prev, photo: uri }));
 
-      // let location = await Location.getCurrentPositionAsync({});
-      // console.log(location);
+      let location = await Location.getCurrentPositionAsync({});
+
+      setState((prev) => ({ ...prev, location }));
     }
   };
   const keyboardHide = () => {
@@ -71,12 +76,21 @@ const AddPostsScreen = ({ navigation }) => {
     const subscription = Dimensions.addEventListener("change", (screen) => {
       setDimensions(screen);
     });
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+    })();
 
     return () => subscription?.remove();
   }, []);
+
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
@@ -121,7 +135,16 @@ const AddPostsScreen = ({ navigation }) => {
             </TouchableOpacity>
           </Camera>
         </View>
-        <Text style={styles.uploudDescr}>Загрузите фото</Text>
+        {state.photo ? (
+          <TouchableOpacity
+            onPress={() => setState((prev) => ({ ...prev, photo: "" }))}
+          >
+            <Text style={styles.uploudDescr}>Редактировать фото</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.uploudDescr}>Загрузите фото</Text>
+        )}
+
         <TextInput
           value={state.imgDescr}
           placeholder="Название..."
@@ -138,7 +161,15 @@ const AddPostsScreen = ({ navigation }) => {
             color="#BDBDBD"
             style={styles.mapPinIcon}
           />
-          <TextInput placeholder="Местность..." style={styles.mapPinInput} />
+          <TextInput
+            value={state.locationDescription}
+            onChangeText={(value) => {
+              setState((prev) => ({ ...prev, locationDescription: value }));
+            }}
+            onFocus={() => setIsShowKeyboard(true)}
+            placeholder="Местность..."
+            style={styles.mapPinInput}
+          />
         </View>
         <View style={styles.button}>
           <PrimaryButton text={"Опубликовать"} onPress={onHandleSubmit} />
