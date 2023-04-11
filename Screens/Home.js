@@ -11,7 +11,7 @@ import PostsScreen from "./MainScreens/PostsScreen";
 import CreatePostsScreen from "./MainScreens/CreatePostsScreen";
 import ProfileScreen from "./MainScreens/ProfileScreen";
 
-const Home = () => {
+const Home = ({ navigation }) => {
   return (
     <Tab.Navigator screenOptions={{ tabBarShowLabel: false }}>
       <Tab.Screen
@@ -41,6 +41,7 @@ const Home = () => {
               size={24}
               color="#212121"
               style={{ marginLeft: 10 }}
+              onPress={() => navigation.navigate("Публикации")}
             />
           ),
         }}

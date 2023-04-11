@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
+// import * as Location from "expo-location";
 import PrimaryButton from "../../components/PrimaryButton";
 
 import { Fontisto } from "@expo/vector-icons";
@@ -22,16 +23,17 @@ const initialState = {
   imgDescr: "",
   photo: null,
 };
+const screenDimensions = Dimensions.get("screen");
 
 const AddPostsScreen = ({ navigation }) => {
   const [state, setState] = useState(initialState);
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
-  const [screenWidth, setScreenWidth] = useState(
-    Dimensions.get("window").width - 16 * 2
-  );
-  console.log("state", state);
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [dimensions, setDimensions] = useState(screenDimensions.width - 16 * 2);
+  const [location, setLocation] = useState(null);
+
   const onHandleSubmit = () => {
     navigation.navigate("Публикации", {
       photo: state.photo,
@@ -49,8 +51,14 @@ const AddPostsScreen = ({ navigation }) => {
       });
       await MediaLibrary.createAssetAsync(uri);
       setState((prev) => ({ ...prev, photo: uri }));
-      console.log(uri);
+
+      // let location = await Location.getCurrentPositionAsync({});
+      // console.log(location);
     }
+  };
+  const keyboardHide = () => {
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
   };
 
   useEffect(() => {
@@ -60,21 +68,17 @@ const AddPostsScreen = ({ navigation }) => {
 
       setHasPermission(status === "granted");
     })();
-    const onScreenSizeChange = () => {
-      setScreenWidth(Dimensions.get("window").width - 16 * 2);
-    };
+    const subscription = Dimensions.addEventListener("change", (screen) => {
+      setDimensions(screen);
+    });
 
-    Dimensions.addEventListener("change", onScreenSizeChange);
-
-    return () => {
-      Dimensions.removeEventListener("change", onScreenSizeChange);
-    };
+    return () => subscription?.remove();
   }, []);
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss()}>
+    <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
         <View style={styles.cameraContainer}>
           <Camera
@@ -88,7 +92,7 @@ const AddPostsScreen = ({ navigation }) => {
               <View style={styles.imageContainer}>
                 <Image
                   source={{ uri: state.photo }}
-                  width={screenWidth}
+                  width={dimensions}
                   height={240}
                 />
               </View>
@@ -125,6 +129,7 @@ const AddPostsScreen = ({ navigation }) => {
           onChangeText={(value) => {
             setState((prev) => ({ ...prev, imgDescr: value }));
           }}
+          onFocus={() => setIsShowKeyboard(true)}
         />
         <View style={styles.mapPinInputContainer}>
           <Feather
@@ -175,7 +180,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     right: 0,
-    // borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 30,
     height: 240,
