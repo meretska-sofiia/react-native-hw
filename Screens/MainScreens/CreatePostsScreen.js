@@ -56,8 +56,8 @@ const AddPostsScreen = ({ navigation }) => {
       await MediaLibrary.createAssetAsync(uri);
       setState((prev) => ({ ...prev, photo: uri }));
 
-      let location = await Location.getCurrentPositionAsync({});
-
+      const location = await Location.getCurrentPositionAsync();
+      console.log(location);
       setState((prev) => ({ ...prev, location }));
     }
   };

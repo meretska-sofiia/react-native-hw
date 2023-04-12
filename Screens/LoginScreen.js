@@ -11,8 +11,10 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
+import { useDispatch } from "react-redux";
 
 import PrimaryButton from "../components/PrimaryButton";
+import { authSignInUser } from "../redux/auth/authOperations";
 
 const initialState = {
   email: "",
@@ -23,15 +25,21 @@ export default function LoginScreen({ navigation }) {
   const [state, setState] = useState(initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const dispatch = useDispatch();
 
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  const onSubmit = () => {
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+    dispatch(authSignInUser(state));
+    setState(initialState);
+  };
+
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    console.log(state);
-    setState(initialState);
   };
 
   return (
@@ -76,7 +84,7 @@ export default function LoginScreen({ navigation }) {
                   <Text style={styles.showPassword}>Показать</Text>
                 </TouchableOpacity>
               </View>
-              <PrimaryButton text={"Войти"} onPress={keyboardHide} />
+              <PrimaryButton text={"Войти"} onPress={onSubmit} />
               <TouchableOpacity
                 onPress={() => navigation.navigate("Registration")}
               >

@@ -17,7 +17,7 @@ const screenDimensions = Dimensions.get("screen");
 const DefaultPostsScreen = ({ route, navigation }) => {
   const [posts, setPosts] = useState([]);
   const [dimensions, setDimensions] = useState(screenDimensions.width - 16 * 2);
-
+  console.log(route.params);
   useEffect(() => {
     if (route.params) {
       setPosts((prev) => [...prev, route.params]);
@@ -65,8 +65,8 @@ const DefaultPostsScreen = ({ route, navigation }) => {
                 style={styles.iconContainer}
                 onPress={() =>
                   navigation.navigate("Карта", {
-                    latitude: item.location.coords.latitude,
-                    longitude: item.location.coords.longitude,
+                    latitude: item?.location.coords?.latitude,
+                    longitude: item?.location.coords?.longitude,
                   })
                 }
               >

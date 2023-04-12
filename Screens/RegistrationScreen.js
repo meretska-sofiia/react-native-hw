@@ -15,6 +15,9 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import PrimaryButton from "../components/PrimaryButton";
 
+import { useDispatch } from "react-redux";
+import { authSignUpUser } from "../redux/auth/authOperations";
+
 SplashScreen.preventAutoHideAsync();
 
 const initialState = {
@@ -28,14 +31,21 @@ export default function RegistartionScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
 
+  const dispatch = useDispatch();
+
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  const onSubmit = () => {
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+    dispatch(authSignInUser(state));
+    setState(initialState);
+  };
+
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    console.log(state);
-    setState(initialState);
   };
 
   const [loaded] = useFonts({
@@ -103,10 +113,7 @@ export default function RegistartionScreen({ navigation }) {
                   <Text style={styles.showPassword}>Показать</Text>
                 </TouchableOpacity>
               </View>
-              <PrimaryButton
-                text={"Зарегистрироваться"}
-                onPress={keyboardHide}
-              />
+              <PrimaryButton text={"Зарегистрироваться"} onPress={onSubmit} />
 
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.secondaryButtonText}>
