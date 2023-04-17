@@ -35,9 +35,9 @@ const DefaultPostsScreen = ({ route, navigation }) => {
   async function getPostsWithComments() {
     const db = getFirestore(app);
     const postsRef = collection(db, "posts");
-    const postsWithComments = [];
 
     onSnapshot(postsRef, async (querySnapshot) => {
+      const postsWithComments = [];
       for (const doc of querySnapshot.docs) {
         const post = { ...doc.data(), id: doc.id };
 
@@ -122,7 +122,7 @@ const DefaultPostsScreen = ({ route, navigation }) => {
                 }
               >
                 <EvilIcons name="comment" size={24} color="#BDBDBD" />
-                <Text style={styles.comments}>{item.comments.length}</Text>
+                <Text style={styles.comments}>{item.comments?.length}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.iconContainer}
