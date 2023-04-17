@@ -8,17 +8,69 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
+import { useSelector } from "react-redux";
+
+import {
+  getFirestore,
+  onSnapshot,
+  collection,
+  getDocs,
+  query,
+} from "firebase/firestore";
+import { app } from "../../firebase/config";
 
 import { EvilIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 
-const screenDimensions = Dimensions.get("screen");
-
 const DefaultPostsScreen = ({ route, navigation }) => {
   const [posts, setPosts] = useState([]);
-  const [dimensions, setDimensions] = useState(screenDimensions.width - 16 * 2);
-  console.log(route.params);
+  const [dimensions, setDimensions] = useState(
+    Dimensions.get("screen").width - 16 * 2
+  );
+
+  const { photoURL, login, email } = useSelector((state) => state.auth);
+
+  async function getPostsWithComments() {
+    const db = getFirestore(app);
+    const postsRef = collection(db, "posts");
+    const postsWithComments = [];
+
+    const unsubscribe = onSnapshot(postsRef, async (querySnapshot) => {
+      for (const doc of querySnapshot.docs) {
+        const post = { ...doc.data(), id: doc.id };
+
+        const commentsRef = collection(db, "posts", post.id, "comments");
+        const commentsQuery = query(commentsRef);
+
+        const commentsSnapshot = await getDocs(commentsQuery);
+        const comments = [];
+
+        commentsSnapshot.forEach((commentDoc) => {
+          const comment = commentDoc.data();
+          comments.push(comment);
+        });
+
+        post.comments = comments;
+
+        const postIndex = postsWithComments.findIndex((p) => p.id === post.id);
+        if (postIndex !== -1) {
+          postsWithComments[postIndex] = post;
+        } else {
+          postsWithComments.push(post);
+        }
+      }
+    });
+
+    return { postsWithComments, unsubscribe };
+  }
+
+  const getCommentsQuantity = async () => {
+    const { postsWithComments } = await getPostsWithComments();
+    setPosts(postsWithComments);
+  };
+
   useEffect(() => {
+    getCommentsQuantity();
     if (route.params) {
       setPosts((prev) => [...prev, route.params]);
     }
@@ -32,13 +84,14 @@ const DefaultPostsScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <View style={styles.user}>
         <Image
-          source={require("../../assets/user.jpg")}
+          source={{ uri: photoURL }}
           width={60}
+          height={60}
           style={styles.userImg}
         />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>Natali Romanova</Text>
-          <Text style={styles.userEmail}>email@example.com</Text>
+        <View>
+          <Text style={styles.userName}>{login}</Text>
+          <Text style={styles.userEmail}>{email}</Text>
         </View>
       </View>
       <FlatList
@@ -56,17 +109,23 @@ const DefaultPostsScreen = ({ route, navigation }) => {
             <View style={styles.locationContainer}>
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate("Комментарии")}
+                onPress={() =>
+                  navigation.navigate("Комментарии", {
+                    postId: item.id,
+                    photo: item.photo,
+                    userId: item.userId,
+                  })
+                }
               >
                 <EvilIcons name="comment" size={24} color="#BDBDBD" />
-                <Text style={styles.comments}>23</Text>
+                <Text style={styles.comments}>{item.comments.length}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.iconContainer}
                 onPress={() =>
                   navigation.navigate("Карта", {
-                    latitude: item?.location.coords?.latitude,
-                    longitude: item?.location.coords?.longitude,
+                    latitude: item.location.coords?.latitude,
+                    longitude: item.location.coords?.longitude,
                   })
                 }
               >
@@ -112,7 +171,6 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: "center",
   },
-  userInfo: {},
   userName: {
     fontFamily: "Roboto-Bold",
     fontSize: 13,

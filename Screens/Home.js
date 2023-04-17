@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 const Tab = createBottomTabNavigator();
-import { TouchableOpacity, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
@@ -13,14 +13,18 @@ import ProfileScreen from "./MainScreens/ProfileScreen";
 
 const Home = ({ navigation }) => {
   return (
-    <Tab.Navigator screenOptions={{ tabBarShowLabel: false }}>
+    <Tab.Navigator
+      screenOptions={() => ({
+        tabBarShowLabel: false,
+      })}
+    >
       <Tab.Screen
-        options={{
+        options={() => ({
           headerShown: false,
           tabBarIcon: () => (
             <Ionicons name="grid-outline" size={24} color="black" />
           ),
-        }}
+        })}
         name={"Posts"}
         component={PostsScreen}
       />
@@ -46,6 +50,7 @@ const Home = ({ navigation }) => {
       />
       <Tab.Screen
         options={{
+          headerShown: false,
           tabBarIcon: () => (
             <Ionicons name="person-outline" size={24} color="black" />
           ),

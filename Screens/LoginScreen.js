@@ -55,7 +55,7 @@ export default function LoginScreen({ navigation }) {
             <View
               style={{
                 ...styles.form,
-                paddingBottom: isShowKeyboard ? 0 : 78,
+                paddingBottom: isShowKeyboard ? 20 : 78,
               }}
             >
               <Text style={styles.formTitle}>Войти</Text>

@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   ImageBackground,
   Text,
+  Image,
   View,
   TextInput,
   TouchableWithoutFeedback,
@@ -11,36 +12,42 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import PrimaryButton from "../components/PrimaryButton";
-
 import { useDispatch } from "react-redux";
+import * as ImagePicker from "expo-image-picker";
+
+import PrimaryButton from "../components/PrimaryButton";
+import { AntDesign } from "@expo/vector-icons";
 import { authSignUpUser } from "../redux/auth/authOperations";
 
-SplashScreen.preventAutoHideAsync();
+import { app } from "../firebase/config";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const initialState = {
   login: "",
-  email: "",
+  userEmail: "",
   password: "",
+  avatar: "",
 };
 
 export default function RegistartionScreen({ navigation }) {
+  const [userAvatar, setUserAvatar] = useState("");
   const [state, setState] = useState(initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
 
   const dispatch = useDispatch();
+  const storage = getStorage(app);
 
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  const onSubmit = () => {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-    dispatch(authSignInUser(state));
-    setState(initialState);
+
+  const onSubmit = async () => {
+    keyboardHide();
+
+    dispatch(authSignUpUser(state));
+
+    // setState(initialState);
   };
 
   const keyboardHide = () => {
@@ -48,23 +55,38 @@ export default function RegistartionScreen({ navigation }) {
     Keyboard.dismiss();
   };
 
-  const [loaded] = useFonts({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
-    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
-  });
-  const onLayoutRootView = useCallback(async () => {
-    if (loaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-  if (!loaded) {
-    return null;
-  }
+    if (!result.canceled) {
+      setUserAvatar(result.assets[0].uri);
+
+      if (result.assets.length > 0) {
+        const response = await fetch(result.assets[0].uri);
+        const blob = await response.blob();
+
+        const imageId = Date.now().toString();
+        const photoRef = ref(storage, `avatars/${imageId}`);
+
+        await uploadBytes(photoRef, blob);
+        const downloadURL = await getDownloadURL(photoRef);
+
+        setState((prevState) => ({
+          ...prevState,
+          avatar: downloadURL,
+        }));
+      }
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
-      <View style={styles.container} onLayout={onLayoutRootView}>
+      <View style={styles.container}>
         <ImageBackground
           style={styles.background}
           source={require("../assets/bg.jpg")}
@@ -75,9 +97,26 @@ export default function RegistartionScreen({ navigation }) {
             <View
               style={{
                 ...styles.form,
-                paddingBottom: isShowKeyboard ? 0 : 78,
+                paddingBottom: isShowKeyboard ? 20 : 78,
               }}
             >
+              <View style={styles.avatarContainer}>
+                {userAvatar ? (
+                  <Image
+                    source={{ uri: userAvatar }}
+                    width={120}
+                    height={120}
+                    style={{ borderRadius: 16 }}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    onPress={pickImage}
+                    style={styles.uploadAvatarButton}
+                  >
+                    <AntDesign name="plus" size={24} color="#FF6C00" />
+                  </TouchableOpacity>
+                )}
+              </View>
               <Text style={styles.formTitle}>Регистрация</Text>
 
               <View style={{ ...styles.inputContainer }}>
@@ -91,9 +130,12 @@ export default function RegistartionScreen({ navigation }) {
                   }
                 />
                 <TextInput
-                  value={state.email}
+                  value={state.userEmail}
                   onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, email: value }))
+                    setState((prevState) => ({
+                      ...prevState,
+                      userEmail: value,
+                    }))
                   }
                   placeholder="Адрес электронной почты"
                   style={styles.input}
@@ -218,5 +260,22 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     textAlign: "center",
     fontFamily: "Roboto-Regular",
+  },
+  avatarContainer: {
+    position: "absolute",
+    top: -60,
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    backgroundColor: "#F6F6F6",
+  },
+  uploadAvatarButton: {
+    position: "absolute",
+    bottom: 14,
+    right: -17,
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: "#FF6C00",
+    padding: 3,
   },
 });

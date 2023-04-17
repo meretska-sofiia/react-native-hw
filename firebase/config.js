@@ -1,14 +1,12 @@
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBsSetK_IPUwsE2AFjN4l1TGyEARD6FANA",
-  authDomain: "hw-react-native-2657f.firebaseapp.com",
-  databaseURL: "https://hw-react-native-2657f-default-rtdb.firebaseio.com",
-  projectId: "hw-react-native-2657f",
-  storageBucket: "hw-react-native-2657f.appspot.com",
-  messagingSenderId: "873472241324",
-  appId: "1:873472241324:web:c54eebd10b1af0c177f909",
-  measurementId: "G-6TJ40WDWGH",
+  apiKey: "AIzaSyB6IWJeEAOsEPP-ooqLSALgd8ObRL_qHcY",
+  authDomain: "hw-react-native-cf828.firebaseapp.com",
+  projectId: "hw-react-native-cf828",
+  storageBucket: "hw-react-native-cf828.appspot.com",
+  messagingSenderId: "674916494128",
+  appId: "1:674916494128:web:35c13de679ed5b2b12f6f5",
+  measurementId: "G-G657ZLGHK2",
 };
 export const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);

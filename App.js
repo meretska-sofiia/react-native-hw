@@ -1,8 +1,11 @@
-import React, { useCallback, useState } from "react";
-import { useFonts } from "expo-font";
+import React, { useCallback } from "react";
+import { SafeAreaView, StyleSheet } from "react-native";
 import { store } from "./redux/store";
 import { Provider } from "react-redux";
+
+import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+
 import Main from "./components/Main";
 
 SplashScreen.preventAutoHideAsync();
@@ -25,8 +28,15 @@ export default function App() {
   }
 
   return (
-    <Provider store={store}>
-      <Main onLayoutRootView={onLayoutRootViews} />
-    </Provider>
+    <SafeAreaView style={styles.container} onLayout={onLayoutRootViews}>
+      <Provider store={store}>
+        <Main />
+      </Provider>
+    </SafeAreaView>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

@@ -10,14 +10,23 @@ import {
   Keyboard,
   Dimensions,
 } from "react-native";
+import { useSelector } from "react-redux";
+
 import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
+
+import { nanoid } from "nanoid";
+
 import PrimaryButton from "../../components/PrimaryButton";
 
 import { Fontisto } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
+
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { app } from "../../firebase/config";
 
 const initialState = {
   imgDescr: "",
@@ -25,7 +34,6 @@ const initialState = {
   locationDescription: "",
   location: {},
 };
-const screenDimensions = Dimensions.get("screen");
 
 const AddPostsScreen = ({ navigation }) => {
   const [state, setState] = useState(initialState);
@@ -33,18 +41,13 @@ const AddPostsScreen = ({ navigation }) => {
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
-  const [dimensions, setDimensions] = useState(screenDimensions.width - 16 * 2);
+  const [dimensions, setDimensions] = useState(
+    Dimensions.get("screen").width - 16 * 2
+  );
 
-  const onHandleSubmit = () => {
-    navigation.navigate("Публикации", {
-      photo: state.photo,
-      imgDescr: state.imgDescr,
-      locationDescription: state.locationDescription,
-      location: state.location,
-    });
-
-    setState(initialState);
-  };
+  const { userId, login } = useSelector((state) => state.auth);
+  console.log(state);
+  const storage = getStorage(app);
 
   const takePhoto = async () => {
     if (cameraRef) {
@@ -55,15 +58,44 @@ const AddPostsScreen = ({ navigation }) => {
       });
       await MediaLibrary.createAssetAsync(uri);
       setState((prev) => ({ ...prev, photo: uri }));
-
-      const location = await Location.getCurrentPositionAsync();
-      console.log(location);
-      setState((prev) => ({ ...prev, location }));
     }
   };
+
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
+  };
+
+  const onHandleSubmit = async () => {
+    const response = await fetch(state.photo);
+    const blob = await response.blob();
+
+    const imageId = Date.now().toString();
+    const photoRef = ref(storage, `images/${imageId}`);
+
+    await uploadBytes(photoRef, blob);
+    const downloadURL = await getDownloadURL(photoRef);
+    uploadPostsToServer(downloadURL);
+    const location = await Location.getCurrentPositionAsync();
+    if (location) {
+      setState((prev) => ({ ...prev, location }));
+    }
+
+    navigation.navigate("Публикации");
+
+    setState(initialState);
+  };
+
+  const uploadPostsToServer = async (photoURL) => {
+    const db = getFirestore(app);
+    await setDoc(doc(db, "posts", nanoid()), {
+      imgDescr: state.imgDescr,
+      photo: photoURL,
+      locationDescription: state.locationDescription,
+      location: state.location,
+      userId,
+      login,
+    });
   };
 
   useEffect(() => {
@@ -73,9 +105,7 @@ const AddPostsScreen = ({ navigation }) => {
 
       setHasPermission(status === "granted");
     })();
-    const subscription = Dimensions.addEventListener("change", (screen) => {
-      setDimensions(screen);
-    });
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -83,7 +113,9 @@ const AddPostsScreen = ({ navigation }) => {
         return;
       }
     })();
-
+    const subscription = Dimensions.addEventListener("change", (screen) => {
+      setDimensions(screen);
+    });
     return () => subscription?.remove();
   }, []);
 

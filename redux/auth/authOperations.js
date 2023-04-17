@@ -9,30 +9,34 @@ import {
 import { app } from "../../firebase/config";
 import { authSlice } from "./authSlice";
 
-const { updateUserProfile, authStateChange, logOutUser } = authSlice.actions;
+const { updateUserProfile, authStateChange, logOutUser, updateUserAvatar } =
+  authSlice.actions;
 
 export const authSignUpUser =
-  ({ email, password, login }) =>
+  ({ userEmail, password, login, avatar }) =>
   async (dispatch, getState) => {
     try {
       const auth = getAuth(app);
       const { user } = await createUserWithEmailAndPassword(
         auth,
-        email,
+        userEmail,
         password
       );
-      await updateProfile(auth.currentUser, { displayName: login });
 
-      const { displayName, uid, email } = auth.currentUser;
+      await updateProfile(auth.currentUser, {
+        photoURL: avatar,
+        displayName: login,
+      });
+
+      const { displayName, uid, email, photoURL } = auth.currentUser;
 
       const updatedUserProfile = {
         login: displayName,
         userId: uid,
         email: email,
+        photoURL: photoURL,
       };
       dispatch(updateUserProfile(updatedUserProfile));
-
-      console.log(user);
     } catch (error) {
       console.log(error);
     }
@@ -69,11 +73,27 @@ export const authStateChangeUser = () => async (dispatch, getState) => {
           login: user.displayName,
           userId: user.uid,
           email: user.email,
+          photoURL: user.photoURL,
         };
-        dispatch(authStateChange({ stateChange: true }));
         dispatch(updateUserProfile(updatedUserProfile));
+        dispatch(authStateChange({ stateChange: true }));
       }
     });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateUsersAvatar = (userAvatar) => async (dispatch, getState) => {
+  try {
+    const auth = getAuth(app);
+    await updateProfile(auth.currentUser, {
+      photoURL: userAvatar,
+    });
+    const { photoURL } = auth.currentUser;
+    console.log(auth.currentUser);
+
+    dispatch(updateUserAvatar({ photoURL }));
   } catch (error) {
     console.log(error);
   }
