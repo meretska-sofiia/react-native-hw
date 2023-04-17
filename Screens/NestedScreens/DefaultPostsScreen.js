@@ -7,6 +7,7 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -23,6 +24,7 @@ import { EvilIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 
 const DefaultPostsScreen = ({ route, navigation }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
   const [dimensions, setDimensions] = useState(
     Dimensions.get("screen").width - 16 * 2
@@ -35,7 +37,7 @@ const DefaultPostsScreen = ({ route, navigation }) => {
     const postsRef = collection(db, "posts");
     const postsWithComments = [];
 
-    const unsubscribe = onSnapshot(postsRef, async (querySnapshot) => {
+    onSnapshot(postsRef, async (querySnapshot) => {
       for (const doc of querySnapshot.docs) {
         const post = { ...doc.data(), id: doc.id };
 
@@ -59,26 +61,28 @@ const DefaultPostsScreen = ({ route, navigation }) => {
           postsWithComments.push(post);
         }
       }
-    });
 
-    return { postsWithComments, unsubscribe };
+      setPosts(postsWithComments);
+      setIsLoading(true);
+    });
   }
 
-  const getCommentsQuantity = async () => {
-    const { postsWithComments } = await getPostsWithComments();
-    setPosts(postsWithComments);
-  };
-
   useEffect(() => {
-    getCommentsQuantity();
-    if (route.params) {
-      setPosts((prev) => [...prev, route.params]);
-    }
+    getPostsWithComments();
+
     const subscription = Dimensions.addEventListener("change", (screen) => {
       setDimensions(screen);
     });
     return () => subscription?.remove();
-  }, [route.params]);
+  }, []);
+
+  if (!isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="small" color="#FF6C00" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

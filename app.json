@@ -2,6 +2,7 @@
   "expo": {
     "name": "react-native-hw",
     "slug": "react-native-hw",
+    "privacy": "unlisted",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",

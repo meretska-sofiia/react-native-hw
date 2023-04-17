@@ -11,6 +11,7 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -28,13 +29,14 @@ import {
 import { app } from "../../firebase/config";
 
 const CommentScreen = ({ route }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [comment, setComment] = useState("");
   const [allComments, setAllComments] = useState([]);
   const [dimensions, setDimensions] = useState(
     Dimensions.get("screen").width - 16 * 2
   );
-  const { login, photoURL, userId } = useSelector((state) => state.auth);
+  const { photoURL, userId } = useSelector((state) => state.auth);
   const { postId, photo } = route.params;
 
   const formatingDate = (date) => {
@@ -87,20 +89,18 @@ const CommentScreen = ({ route }) => {
     const db = getFirestore(app);
     const commentsCollection = collection(db, "posts", postId, "comments");
 
-    await onSnapshot(
+    onSnapshot(
       query(commentsCollection, orderBy("createdAt", "asc")),
       (querySnapshot) => {
         const comments = [];
-        querySnapshot.forEach((doc) => {
+        for (const doc of querySnapshot.docs) {
           comments.push({
             id: doc.id,
             ...doc.data(),
           });
-        });
+        }
         setAllComments(comments);
-      },
-      (error) => {
-        console.error(error);
+        setIsLoading(true);
       }
     );
   };
@@ -118,6 +118,14 @@ const CommentScreen = ({ route }) => {
     });
     return () => subscription?.remove();
   }, []);
+
+  if (!isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center" }}>
+        <ActivityIndicator size="small" color="#FF6C00" />
+      </View>
+    );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>

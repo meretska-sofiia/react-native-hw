@@ -27,10 +27,6 @@ export const authSlice = createSlice({
       stateChange: payload.stateChange,
     }),
     logOutUser: (state) => (state = { ...initialState }),
-    // deleteUserAvatar: (state) => ({
-    //   ...state,
-    //   photoURL: null,
-    // }),
     updateUserAvatar: (state, { payload }) => ({
       ...state,
       photoURL: payload.photoURL,

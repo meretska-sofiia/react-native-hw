@@ -8,6 +8,7 @@ import {
   Dimensions,
   Text,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -38,7 +39,7 @@ import { authSignOutUser } from "../../redux/auth/authOperations";
 import { updateUsersAvatar } from "../../redux/auth/authOperations";
 
 const ProfileScreen = ({ navigation }) => {
-  const [userAvatar, setUserAvatar] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [usersPost, setUsersPost] = useState([]);
   const { photoURL, login, userId } = useSelector((state) => state.auth);
 
@@ -47,7 +48,6 @@ const ProfileScreen = ({ navigation }) => {
   );
   const dispatch = useDispatch();
   const storage = getStorage(app);
-  console.log(userAvatar);
 
   async function getPostsWithComments() {
     const db = getFirestore(app);
@@ -73,6 +73,7 @@ const ProfileScreen = ({ navigation }) => {
     }
 
     setUsersPost(postsWithComments);
+    setIsLoading(true);
   }
 
   const deleteAvatarFromServer = () => {
@@ -81,7 +82,7 @@ const ProfileScreen = ({ navigation }) => {
     deleteObject(fileRef)
       .then(() => {
         console.log("File deleted successfully");
-        setUserAvatar("");
+        dispatch(updateUsersAvatar(""));
       })
       .catch((error) => {
         console.error("Error deleting file: ", error);
@@ -106,7 +107,7 @@ const ProfileScreen = ({ navigation }) => {
 
         await uploadBytes(photoRef, blob);
         getDownloadURL(photoRef).then((downloadURL) => {
-          setUserAvatar(downloadURL);
+          dispatch(updateUsersAvatar(downloadURL));
         });
       }
     }
@@ -114,12 +115,20 @@ const ProfileScreen = ({ navigation }) => {
 
   useEffect(() => {
     getPostsWithComments();
-    dispatch(updateUsersAvatar(userAvatar));
+
     const subscription = Dimensions.addEventListener("change", (screen) => {
       setDimensions(screen);
     });
     return () => subscription?.remove();
-  }, [userAvatar]);
+  }, [usersPost]);
+
+  if (!isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center" }}>
+        <ActivityIndicator size="small" color="#FF6C00" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

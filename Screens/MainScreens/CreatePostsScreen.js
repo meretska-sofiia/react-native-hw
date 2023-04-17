@@ -46,7 +46,7 @@ const AddPostsScreen = ({ navigation }) => {
   );
 
   const { userId, login } = useSelector((state) => state.auth);
-  console.log(state);
+
   const storage = getStorage(app);
 
   const takePhoto = async () => {
@@ -58,6 +58,10 @@ const AddPostsScreen = ({ navigation }) => {
       });
       await MediaLibrary.createAssetAsync(uri);
       setState((prev) => ({ ...prev, photo: uri }));
+      const location = await Location.getCurrentPositionAsync();
+      if (location) {
+        setState((prev) => ({ ...prev, location }));
+      }
     }
   };
 
@@ -76,10 +80,6 @@ const AddPostsScreen = ({ navigation }) => {
     await uploadBytes(photoRef, blob);
     const downloadURL = await getDownloadURL(photoRef);
     uploadPostsToServer(downloadURL);
-    const location = await Location.getCurrentPositionAsync();
-    if (location) {
-      setState((prev) => ({ ...prev, location }));
-    }
 
     navigation.navigate("Публикации");
 

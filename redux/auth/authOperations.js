@@ -48,7 +48,6 @@ export const authSignInUser =
     try {
       const auth = getAuth(app);
       const user = await signInWithEmailAndPassword(auth, email, password);
-      console.log(user);
     } catch (error) {
       console.log(error);
     }
@@ -91,7 +90,6 @@ export const updateUsersAvatar = (userAvatar) => async (dispatch, getState) => {
       photoURL: userAvatar,
     });
     const { photoURL } = auth.currentUser;
-    console.log(auth.currentUser);
 
     dispatch(updateUserAvatar({ photoURL }));
   } catch (error) {

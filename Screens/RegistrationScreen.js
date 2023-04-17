@@ -46,8 +46,6 @@ export default function RegistartionScreen({ navigation }) {
     keyboardHide();
 
     dispatch(authSignUpUser(state));
-
-    // setState(initialState);
   };
 
   const keyboardHide = () => {
