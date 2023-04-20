@@ -16,8 +16,6 @@ import * as MediaLibrary from "expo-media-library";
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
 
-import { nanoid } from "nanoid";
-
 import PrimaryButton from "../../components/PrimaryButton";
 
 import { Fontisto } from "@expo/vector-icons";
@@ -25,7 +23,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, addDoc, collection } from "firebase/firestore";
 import { app } from "../../firebase/config";
 
 const initialState = {
@@ -48,54 +46,68 @@ const AddPostsScreen = ({ navigation }) => {
   const { userId, login } = useSelector((state) => state.auth);
 
   const storage = getStorage(app);
-
-  const takePhoto = async () => {
-    if (cameraRef) {
-      const { uri } = await cameraRef.takePictureAsync({
-        pictureOrientation:
-          Camera.Constants?.Orientation?.auto ??
-          Camera.Constants?.PictureOrientation?.auto,
-      });
-      await MediaLibrary.createAssetAsync(uri);
-      setState((prev) => ({ ...prev, photo: uri }));
-      const location = await Location.getCurrentPositionAsync();
-      if (location) {
-        setState((prev) => ({ ...prev, location }));
-      }
-    }
-  };
+  const db = getFirestore(app);
 
   const keyboardHide = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
   };
 
-  const onHandleSubmit = async () => {
-    const response = await fetch(state.photo);
-    const blob = await response.blob();
+  const takePhoto = async () => {
+    try {
+      if (cameraRef) {
+        const { uri } = await cameraRef.takePictureAsync();
+        await MediaLibrary.createAssetAsync(uri);
+        setState((prev) => ({ ...prev, photo: uri }));
 
-    const imageId = Date.now().toString();
-    const photoRef = ref(storage, `images/${imageId}`);
-
-    await uploadBytes(photoRef, blob);
-    const downloadURL = await getDownloadURL(photoRef);
-    uploadPostsToServer(downloadURL);
-
-    navigation.navigate("Публикации");
-
-    setState(initialState);
+        const location = await Location.getCurrentPositionAsync();
+        if (location) {
+          setState((prev) => ({ ...prev, location }));
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const uploadPostsToServer = async (photoURL) => {
-    const db = getFirestore(app);
-    await setDoc(doc(db, "posts", nanoid()), {
-      imgDescr: state.imgDescr,
-      photo: photoURL,
-      locationDescription: state.locationDescription,
-      location: state.location,
-      userId,
-      login,
-    });
+  const uploadPhoto = async () => {
+    try {
+      const response = await fetch(state.photo);
+      const blob = await response.blob();
+
+      const imageId = Date.now().toString();
+      const photoRef = ref(storage, `images/${imageId}`);
+
+      await uploadBytes(photoRef, blob);
+      const downloadURL = await getDownloadURL(photoRef);
+
+      return downloadURL;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const uploadPostsToServer = async () => {
+    try {
+      const photoURL = await uploadPhoto();
+      console.log(photoURL);
+      await addDoc(collection(db, "posts"), {
+        imgDescr: state.imgDescr,
+        photo: photoURL,
+        locationDescription: state.locationDescription,
+        location: state.location,
+        userId,
+        login,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onHandleSubmit = async () => {
+    uploadPostsToServer();
+    navigation.navigate("Публикации");
+    setState(initialState);
   };
 
   useEffect(() => {
